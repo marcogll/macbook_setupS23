@@ -15,7 +15,7 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 # --- Contador de progreso ---------------------------------------------------------------
-TOTAL_STEPS=29
+TOTAL_STEPS=32
 CURRENT_STEP=0
 
 progress() {
@@ -414,7 +414,49 @@ else
   skip "opencode ya presente"
 fi
 
-# --- 29. ZeroTier (opcional) -----------------------------------------------------------
+# --- 28. TeamViewer -------------------------------------------------------------------
+progress "TeamViewer"
+if [ ! -d "/Applications/TeamViewerQS.app" ]; then
+  warn "Descargando TeamViewer QuickSupport..."
+  curl -L "https://download.teamviewer.com/download/TeamViewerQS.dmg" -o "/tmp/TeamViewerQS.dmg"
+  hdiutil attach "/tmp/TeamViewerQS.dmg" -mountpoint /tmp/tv_mnt -nobrowse
+  cp -a "/tmp/tv_mnt/TeamViewerQS.app" "/Applications/"
+  hdiutil detach /tmp/tv_mnt
+  rm -f "/tmp/TeamViewerQS.dmg"
+  log "TeamViewer QuickSupport instalado"
+else
+  skip "TeamViewer QuickSupport ya presente"
+fi
+
+# --- 29. Codex CLI (OpenAI) -----------------------------------------------------------
+progress "Codex CLI (OpenAI)"
+if ! command -v codex &>/dev/null; then
+  warn "Instalando Codex CLI..."
+  npm install -g @openai/codex 2>/dev/null || true
+  if command -v codex &>/dev/null; then
+    log "Codex CLI instalado"
+  else
+    warn "Codex CLI no se pudo instalar via npm"
+  fi
+else
+  skip "Codex CLI ya presente"
+fi
+
+# --- 30. VSCode ------------------------------------------------------------------------
+progress "VSCode"
+if [ ! -d "/Applications/Visual Studio Code.app" ]; then
+  warn "Descargando VSCode..."
+  curl -L "https://update.code.visualstudio.com/latest/darwin-arm64/stable" -o "/tmp/VSCode.dmg"
+  hdiutil attach "/tmp/VSCode.dmg" -mountpoint /tmp/vscode_mnt -nobrowse
+  cp -a "/tmp/vscode_mnt/Visual Studio Code.app" "/Applications/"
+  hdiutil detach /tmp/vscode_mnt
+  rm -f "/tmp/VSCode.dmg"
+  log "VSCode instalado"
+else
+  skip "VSCode ya presente"
+fi
+
+# --- 31. ZeroTier (opcional) -----------------------------------------------------------
 progress "ZeroTier (opcional)"
 if ! command -v zerotier-cli &>/dev/null; then
   if [ ! -d "/Applications/ZeroTier.app" ]; then
@@ -473,6 +515,9 @@ echo "  • pkg-config      $(command -v pkg-config &>/dev/null && echo '✓' ||
 echo "  • Docker          $(command -v docker &>/dev/null && echo "✓" || echo '○ pendiente')"
 echo "  • GitHub CLI      $(command -v gh &>/dev/null && echo "✓ $(gh --version | head -1 | awk '{print $3}')" || echo '✗')"
 echo "  • opencode        $(command -v opencode &>/dev/null && echo '✓' || echo '✗')"
+echo "  • TeamViewer      $([ -d "/Applications/TeamViewerQS.app" ] && echo '✓' || echo '○ pendiente')"
+echo "  • Codex CLI       $(command -v codex &>/dev/null && echo '✓' || echo '✗')"
+echo "  • VSCode          $([ -d "/Applications/Visual Studio Code.app" ] && echo '✓' || echo '○ pendiente')"
 echo "  • ZeroTier        $(command -v zerotier-cli &>/dev/null && echo '✓' || ( [ -d "/Applications/ZeroTier.app" ] && echo '✓ (app)' || echo '○ pendiente' ))"
 echo ""
 
