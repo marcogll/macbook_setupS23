@@ -1,0 +1,22 @@
+# .zshrc.local - Configuración local y variables sensibles
+# Este archivo es cargado por .zshrc y no debe ser incluido en el control de versiones si contiene secretos reales.
+
+# --- API Keys ----------------------------------------------------------------
+# Descomenta y rellena las claves que necesites.
+
+# OpenAI
+# export OPENAI_API_KEY="sk-proj-..."
+
+# Google Gemini
+# export GOOGLE_API_KEY="AIza..."
+
+# Anthropic Claude
+# export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Telegram
+# export TELEGRAM_API_KEY="123456:ABC-..."
+# export TELEGRAM_CHAT_ID="123456789"
+
+# Otras APIs
+# export DEEPSEEK_API_KEY="..."
+# export MISTRAL_API_KEY="..."

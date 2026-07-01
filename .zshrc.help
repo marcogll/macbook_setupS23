@@ -1,0 +1,199 @@
+# --- Funciones de Ayuda ------------------------------------------------------
+# Muestra una lista detallada de todos los alias y funciones personalizadas.
+# Soporta modo interactivo con fzf si está instalado.
+zsh_help() {
+  # --- Colores ---
+  local C_DEFAULT="\e[0m"
+  local C_BOLD="\e[1m"
+  local C_TITLE="\e[1;35m"    # Bold Magenta
+  local C_SUBTITLE="\e[1;36m" # Bold Cyan
+  local C_SECTION="\e[1;34m"  # Bold Blue
+  local C_CMD="\e[0;32m"      # Green
+  local C_DESC="\e[0;37m"     # White
+  local C_NOTE="\e[0;90m"     # Gray
+
+  # --- Componentes de la Ayuda ---
+
+  _help_header() {
+    clear
+    echo -e "${C_TITLE}╔════════════════════════════════════════════════════════════════════╗"
+    echo -e "${C_TITLE}║           GUÍA DEL SISTEMA Y CONFIGURACIÓN DE ZSH  (v2.1)         ║"
+    echo -e "${C_TITLE}╚════════════════════════════════════════════════════════════════════╝${C_DEFAULT}"
+  }
+
+  _help_print_section() { echo -e "\n${C_SECTION}--- $1 ---${C_DEFAULT}"; }
+  _help_print_cmd() { printf "  ${C_CMD}%-22s ${C_DESC}%s\n${C_DEFAULT}" "$1" "$2"; }
+
+  _help_nav() {
+    _help_print_section "Navegación y Archivos"
+    _help_print_cmd ".." "Subir un nivel (cd ..)"
+    _help_print_cmd "..." "Subir dos niveles"
+    _help_print_cmd "-" "Volver al directorio anterior"
+    _help_print_cmd "ll" "Listar con detalles (ls -alF)"
+    _help_print_cmd "mkcd <dir>" "Crear directorio y entrar en él"
+    _help_print_cmd "z <dir>" "Saltar a directorio (zoxide)"
+    _help_print_cmd "zi" "Seleccionar directorio interactivo"
+    _help_print_cmd "zz" "Volver al directorio anterior (z -)"
+    _help_print_cmd "extract <file>" "Descomprimir (zip, tar, rar...)"
+    _help_print_cmd "backup <file>" "Copia de seguridad con timestamp"
+    _help_print_cmd "buscar <texto>" "Buscar texto recursivamente en archivos"
+  }
+
+  _help_git() {
+    _help_print_section "Git — Flujo de Trabajo"
+    _help_print_cmd "gs" "Estado (git status)"
+    _help_print_cmd "ga" "Añadir cambios (git add)"
+    _help_print_cmd "gcm <msg>" "Commit con mensaje"
+    _help_print_cmd "gac <msg>" "Add todo + Commit"
+    _help_print_cmd "gacp <msg>" "Add + Commit + Push"
+    _help_print_cmd "gp / gpf" "Push / Push forzado seguro"
+    _help_print_cmd "gl" "Pull"
+    _help_print_cmd "gd / gds" "Diff / Diff en staging"
+    _help_print_cmd "gb / gba" "Ramas locales / todas las ramas"
+    _help_print_cmd "gst / gstp" "Stash / Recuperar stash"
+    _help_print_cmd "greset" "Deshacer ultimo commit (mantiene cambios)"
+    _help_print_cmd "glog / glog2" "Log visual / Log de todas las ramas"
+  }
+
+  _help_docker() {
+    _help_print_section "Docker — Contenedores"
+    _help_print_cmd "dps" "Ver todos los contenedores"
+    _help_print_cmd "dc" "Docker Compose (auto-detecta v1/v2)"
+    _help_print_cmd "dex <id>" "Entrar a terminal de contenedor"
+    _help_print_cmd "dlog <id>" "Ver logs en tiempo real"
+    _help_print_cmd "dstop" "Detener todos los contenedores activos"
+    _help_print_cmd "dclean" "Limpiar imagenes/vol. no usados (⚠️)"
+    _help_print_cmd "dnet" "Listar redes Docker"
+  }
+
+  _help_dev() {
+    _help_print_section "Desarrollo"
+    _help_print_cmd "py / python" "Ejecuta python3"
+    _help_print_cmd "pip" "Ejecuta pip3"
+    _help_print_cmd "venv create" "Crea entorno virtual (.venv)"
+    _help_print_cmd "venv on" "Activa entorno virtual"
+    _help_print_cmd "venv off" "Desactiva entorno virtual"
+    _help_print_cmd "serve [port]" "Servidor HTTP en puerto (def. 8000)"
+    _help_print_cmd "nrd / nrb" "npm run dev / build"
+    _help_print_cmd "nci" "npm ci (instalacion limpia)"
+    _help_print_cmd "nou" "Ver paquetes npm desactualizados"
+  }
+
+  _help_hyprland() {
+    _help_print_section "Hyprland — Compositor Wayland"
+    _help_print_cmd "hypr" "Acceso directo a hyprctl"
+    _help_print_cmd "hypr-info" "Version del compositor"
+    _help_print_cmd "hypr-monitors" "Monitores conectados"
+    _help_print_cmd "hypr-workspaces" "Listar todos los workspaces"
+    _help_print_cmd "hypr-clients" "Ventanas abiertas"
+    _help_print_cmd "hypr-active" "Ventana actualmente enfocada"
+    _help_print_cmd "hypr-devices" "Teclados, ratones, tabletas"
+    _help_print_cmd "hypr-kill" "Cerrar ventana activa"
+    _help_print_cmd "hypr-float" "Alternar modo flotante"
+    _help_print_cmd "hypr-fullscreen" "Pantalla completa real"
+    _help_print_cmd "hypr-maximize" "Maximizar (sin ocultar bars)"
+    _help_print_cmd "hypr-pin" "Anclar ventana en todos los ws"
+    _help_print_cmd "hypr-reload" "Recargar configuracion"
+    _help_print_cmd "hypr-exit" "Cerrar sesion Hyprland"
+    _help_print_cmd "hypr-ws [N]" "Listar o cambiar a workspace N"
+    _help_print_cmd "hypr-move <N>" "Mover ventana activa a workspace N"
+    _help_print_cmd "hypr-dispatch <a>" "hyprctl dispatch <accion>"
+    _help_print_cmd "hypr-dashboard" "Resumen completo del entorno"
+  }
+
+  _help_zerotier() {
+    _help_print_section "ZeroTier — Red Privada Virtual"
+    _help_print_cmd "zti" "Info del nodo (ID, version, estado)"
+    _help_print_cmd "ztstatus" "Redes ZeroTier conectadas"
+    _help_print_cmd "ztpeers" "Peers conocidos"
+    _help_print_cmd "ztmoons" "Moons (servidores raiz privados)"
+    _help_print_cmd "ztjoin <id>" "Unirse a una red (ID de 16 chars)"
+    _help_print_cmd "ztleave <id>" "Salir de una red"
+    _help_print_cmd "ztstart/stop" "Iniciar / Detener el servicio"
+    _help_print_cmd "ztrestart" "Reiniciar el servicio"
+    _help_print_cmd "ztlog" "Logs del servicio en tiempo real"
+    _help_print_cmd "zt-info" "Funcion: nodo con formato legible"
+    _help_print_cmd "zt-nets" "Funcion: tabla de redes conectadas"
+    _help_print_cmd "zt-peers" "Funcion: peers con latencia y rol"
+    _help_print_cmd "zt-dashboard" "Funcion: resumen completo del estado"
+  }
+
+  _help_utils() {
+    _help_print_section "Utilidades"
+    _help_print_cmd "ff / nf" "Info del sistema (Fastfetch)"
+    _help_print_cmd "sysinfo" "Resumen rapido del sistema"
+    _help_print_cmd "myip" "IP publica"
+    _help_print_cmd "localip" "IPs locales de las interfaces"
+    _help_print_cmd "ports" "Puertos en escucha (ss -tulnp)"
+    _help_print_cmd "killport <N>" "Matar proceso en puerto N"
+    _help_print_cmd "clima" "Pronostico del tiempo (Saltillo)"
+    _help_print_cmd "df / du / free" "Disco / Dir / Memoria"
+    _help_print_cmd "ytm <url>" "Descargar musica (MP3 320k)"
+    _help_print_cmd "ytv <url> [q]" "Descargar video (MP4)"
+    _help_print_cmd "ytls" "Listar ultimas descargas"
+  }
+
+  _help_ssh() {
+    _help_print_section "SSH"
+    _help_print_cmd "ssh-list" "Claves cargadas en el agente"
+    _help_print_cmd "ssh-reload" "Recargar todas las claves SSH"
+    _help_print_cmd "ssh-hosts" "Listar hosts en ~/.ssh/config"
+    _help_print_cmd "sz / sc / ss" "ssh zima_os / claudia / soul23"
+    _help_print_cmd "sgh" "Verificar conexion con GitHub"
+  }
+
+  _help_all() {
+    _help_header
+    echo -e "\n${C_SUBTITLE}Resumen del Sistema:${C_DEFAULT}"
+    echo -e "  • ${C_BOLD}Framework:${C_DEFAULT} Oh My Zsh  •  ${C_BOLD}Prompt:${C_DEFAULT} Oh My Posh (catppuccin_frappe)"
+    echo -e "  • ${C_BOLD}Extras:${C_DEFAULT}    zsh-autosuggestions, zsh-syntax-highlighting, zoxide, mise"
+    _help_nav
+    _help_git
+    _help_docker
+    _help_dev
+    _help_hyprland
+    _help_zerotier
+    _help_utils
+    _help_ssh
+    echo -e "\n${C_NOTE}Tip: Usa 'help' sin argumentos para el menu interactivo (requiere fzf).${C_DEFAULT}\n"
+  }
+
+  _wait_for_key() {
+    echo ""
+    read -k 1 "key?Presiona cualquier tecla para volver..."
+  }
+
+  # --- Logica Principal ---
+  if [[ "$1" == "--all" ]]; then
+    _help_all
+    return 0
+  fi
+
+  # Si fzf esta instalado, mostrar menu interactivo en bucle
+  if command -v fzf >/dev/null 2>&1; then
+    while true; do
+      local options="Todo\nNavegación\nGit\nDocker\nDesarrollo\nHyprland\nZeroTier\nUtilidades\nSSH\nSalir (q)"
+      local selected=$(echo -e "$options" | fzf --ansi --height=40% --layout=reverse --border --prompt="Ayuda > " --header="Selecciona un tema")
+
+      case "$selected" in
+        "Todo")         _help_all;       _wait_for_key ;;
+        "Navegación")   _help_header; _help_nav;       _wait_for_key ;;
+        "Git")          _help_header; _help_git;       _wait_for_key ;;
+        "Docker")       _help_header; _help_docker;    _wait_for_key ;;
+        "Desarrollo")   _help_header; _help_dev;       _wait_for_key ;;
+        "Hyprland")     _help_header; _help_hyprland;  _wait_for_key ;;
+        "ZeroTier")     _help_header; _help_zerotier;  _wait_for_key ;;
+        "Utilidades")   _help_header; _help_utils;     _wait_for_key ;;
+        "SSH")          _help_header; _help_ssh;       _wait_for_key ;;
+        "Salir (q)"|"") break ;;
+      esac
+    done
+  else
+    # Fallback si no hay fzf
+    _help_all
+  fi
+}
+
+# Alias para acceder a la funcion de ayuda.
+alias zsh-help='zsh_help'
+alias help='zsh_help'
